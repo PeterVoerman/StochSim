@@ -86,4 +86,44 @@ def plot_i_s_contour(i_list, s_list, log=False):
     plt.yscale("log")
     plt.show()
 
-plot_i_s_contour(np.logspace(0, 3, 50), np.logspace(1, 5, 50), log=True)
+def plot_i_s_variance(i_list, s_list, nruns=10, log=False):
+
+    total_evaluations = len(i_list) * len(s_list) * nruns
+    n_evaluations = 0
+
+    expected_area = 1.506484
+
+    data = []
+    for i in i_list:
+
+        results = []
+        for s in s_list:
+
+            run_results = []
+            for run in range(nruns):
+                run_results.append(determine_area(i=i, s=s))
+                n_evaluations += 1
+
+                if log and n_evaluations % 10 == 0:
+                    print(f"Progress: {n_evaluations/total_evaluations * 100:1f}%", end="\r")
+
+            results.append(np.var(run_results))
+        
+        data.append(results)
+
+    contour = plt.contourf(s_list, i_list, data, 10, cmap="PuBuGn_r")
+    
+    colorbar = plt.colorbar(contour)
+    colorbar.set_label("Variance in area")
+
+    plt.xlabel("Samples")
+    plt.ylabel("Max iterations")
+
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.show()
+
+i_list = np.logspace(0, 3, 20)
+s_list = np.logspace(1, 5, 20)
+plot_i_s_contour(i_list, s_list, log=True)
+plot_i_s_variance(i_list, s_list, nruns=20, log=True)
